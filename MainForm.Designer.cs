@@ -62,63 +62,82 @@
             ((System.ComponentModel.ISupportInitialize)numPortEnd).BeginInit();
             ((System.ComponentModel.ISupportInitialize)dgvResults).BeginInit();
             statusStrip.SuspendLayout();
+            topPanel.SuspendLayout();
             SuspendLayout();
-
+            // 
+            // chkOwnIp
+            // 
             chkOwnIp.AutoSize = true;
-            chkOwnIp.Location = new Point(13, 12);
+            chkOwnIp.Location = new Point(23, 22);
             chkOwnIp.Name = "chkOwnIp";
-            chkOwnIp.Size = new Size(104, 24);
+            chkOwnIp.Size = new Size(90, 19);
             chkOwnIp.TabIndex = 0;
             chkOwnIp.Text = "Scan own IP";
             chkOwnIp.CheckedChanged += chkOwnIp_CheckedChanged;
-
+            // 
+            // lblStartIp
+            // 
             lblStartIp.AutoSize = true;
-            lblStartIp.Location = new Point(13, 44);
+            lblStartIp.Location = new Point(23, 54);
             lblStartIp.Name = "lblStartIp";
-            lblStartIp.Size = new Size(100, 23);
+            lblStartIp.Size = new Size(44, 15);
             lblStartIp.TabIndex = 0;
             lblStartIp.Text = "Start IP";
-
+            // 
+            // txtStartIp
+            // 
             txtStartIp.Location = new Point(80, 40);
             txtStartIp.Name = "txtStartIp";
             txtStartIp.PlaceholderText = "e.g. 192.168.1.1";
             txtStartIp.Size = new Size(160, 23);
             txtStartIp.TabIndex = 0;
-
+            // 
+            // lblEndIp
+            // 
             lblEndIp.AutoSize = true;
-            lblEndIp.Location = new Point(250, 44);
+            lblEndIp.Location = new Point(260, 54);
             lblEndIp.Name = "lblEndIp";
-            lblEndIp.Size = new Size(100, 23);
+            lblEndIp.Size = new Size(40, 15);
             lblEndIp.TabIndex = 0;
             lblEndIp.Text = "End IP";
-
+            // 
+            // txtEndIp
+            // 
             txtEndIp.Location = new Point(305, 40);
             txtEndIp.Name = "txtEndIp";
             txtEndIp.PlaceholderText = "e.g. 192.168.1.254";
             txtEndIp.Size = new Size(160, 23);
             txtEndIp.TabIndex = 0;
-
+            // 
+            // lblScanType
+            // 
             lblScanType.AutoSize = true;
-            lblScanType.Location = new Point(480, 44);
+            lblScanType.Location = new Point(490, 54);
             lblScanType.Name = "lblScanType";
-            lblScanType.Size = new Size(100, 23);
+            lblScanType.Size = new Size(60, 15);
             lblScanType.TabIndex = 0;
             lblScanType.Text = "Scan Type";
-
+            // 
+            // cmbScanType
+            // 
             cmbScanType.DropDownStyle = ComboBoxStyle.DropDownList;
             cmbScanType.Items.AddRange(new object[] { "Ping", "Port Sweep" });
             cmbScanType.Location = new Point(548, 40);
             cmbScanType.Name = "cmbScanType";
             cmbScanType.Size = new Size(140, 23);
             cmbScanType.TabIndex = 0;
-
+            // 
+            // lblTimeout
+            // 
             lblTimeout.AutoSize = true;
-            lblTimeout.Location = new Point(700, 44);
+            lblTimeout.Location = new Point(710, 54);
             lblTimeout.Name = "lblTimeout";
-            lblTimeout.Size = new Size(100, 23);
+            lblTimeout.Size = new Size(79, 15);
             lblTimeout.TabIndex = 0;
             lblTimeout.Text = "Timeout (ms)";
-
+            // 
+            // numTimeout
+            // 
             numTimeout.Location = new Point(796, 40);
             numTimeout.Maximum = new decimal(new int[] { 60000, 0, 0, 0 });
             numTimeout.Minimum = new decimal(new int[] { 50, 0, 0, 0 });
@@ -126,14 +145,18 @@
             numTimeout.Size = new Size(100, 23);
             numTimeout.TabIndex = 0;
             numTimeout.Value = new decimal(new int[] { 200, 0, 0, 0 });
-
+            // 
+            // lblPortStart
+            // 
             lblPortStart.AutoSize = true;
-            lblPortStart.Location = new Point(13, 84);
+            lblPortStart.Location = new Point(23, 94);
             lblPortStart.Name = "lblPortStart";
-            lblPortStart.Size = new Size(100, 23);
+            lblPortStart.Size = new Size(56, 15);
             lblPortStart.TabIndex = 0;
             lblPortStart.Text = "Start Port";
-
+            // 
+            // numPortStart
+            // 
             numPortStart.Location = new Point(80, 80);
             numPortStart.Maximum = new decimal(new int[] { 65535, 0, 0, 0 });
             numPortStart.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
@@ -141,14 +164,18 @@
             numPortStart.Size = new Size(100, 23);
             numPortStart.TabIndex = 0;
             numPortStart.Value = new decimal(new int[] { 1, 0, 0, 0 });
-   
+            // 
+            // lblPortEnd
+            // 
             lblPortEnd.AutoSize = true;
-            lblPortEnd.Location = new Point(190, 84);
+            lblPortEnd.Location = new Point(200, 94);
             lblPortEnd.Name = "lblPortEnd";
-            lblPortEnd.Size = new Size(100, 23);
+            lblPortEnd.Size = new Size(52, 15);
             lblPortEnd.TabIndex = 0;
             lblPortEnd.Text = "End Port";
-
+            // 
+            // numPortEnd
+            // 
             numPortEnd.Location = new Point(250, 80);
             numPortEnd.Maximum = new decimal(new int[] { 65535, 0, 0, 0 });
             numPortEnd.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
@@ -157,7 +184,9 @@
             numPortEnd.TabIndex = 0;
             toolTip.SetToolTip(numPortEnd, "If only end is set, start defaults to 1");
             numPortEnd.Value = new decimal(new int[] { 1, 0, 0, 0 });
- 
+            // 
+            // btnScan
+            // 
             btnScan.Location = new Point(370, 79);
             btnScan.Name = "btnScan";
             btnScan.Size = new Size(90, 27);
@@ -165,7 +194,9 @@
             btnScan.Text = "Scan";
             btnScan.UseVisualStyleBackColor = true;
             btnScan.Click += btnScan_Click;
- 
+            // 
+            // btnCancel
+            // 
             btnCancel.Enabled = false;
             btnCancel.Location = new Point(466, 79);
             btnCancel.Name = "btnCancel";
@@ -174,7 +205,9 @@
             btnCancel.Text = "Cancel";
             btnCancel.UseVisualStyleBackColor = true;
             btnCancel.Click += btnCancel_Click;
-
+            // 
+            // btnExport
+            // 
             btnExport.Location = new Point(562, 79);
             btnExport.Name = "btnExport";
             btnExport.Size = new Size(90, 27);
@@ -182,7 +215,9 @@
             btnExport.Text = "Export";
             btnExport.UseVisualStyleBackColor = true;
             btnExport.Click += btnExport_Click;
-
+            // 
+            // btnCredits
+            // 
             btnCredits.Location = new Point(658, 79);
             btnCredits.Name = "btnCredits";
             btnCredits.Size = new Size(90, 27);
@@ -190,14 +225,18 @@
             btnCredits.Text = "Credits";
             btnCredits.UseVisualStyleBackColor = true;
             btnCredits.Click += btnCredits_Click;
-
+            // 
+            // progressBar
+            // 
             progressBar.Dock = DockStyle.Top;
             progressBar.Location = new Point(0, 150);
             progressBar.Name = "progressBar";
             progressBar.Size = new Size(1744, 10);
             progressBar.Style = ProgressBarStyle.Continuous;
             progressBar.TabIndex = 1;
-
+            // 
+            // dgvResults
+            // 
             dgvResults.AllowUserToAddRows = false;
             dgvResults.AllowUserToDeleteRows = false;
             dgvResults.AllowUserToResizeRows = false;
@@ -213,38 +252,55 @@
             dgvResults.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvResults.Size = new Size(1744, 605);
             dgvResults.TabIndex = 0;
-
+            dgvResults.CellContentClick += dgvResults_CellContentClick;
+            // 
+            // colIp
+            // 
             colIp.HeaderText = "IP Address";
             colIp.Name = "colIp";
             colIp.ReadOnly = true;
-
+            // 
+            // colHost
+            // 
             colHost.HeaderText = "Hostname";
             colHost.Name = "colHost";
             colHost.ReadOnly = true;
-
+            // 
+            // colStatus
+            // 
             colStatus.HeaderText = "Status";
             colStatus.Name = "colStatus";
             colStatus.ReadOnly = true;
-
+            // 
+            // colLatency
+            // 
             colLatency.HeaderText = "Latency (ms)";
             colLatency.Name = "colLatency";
             colLatency.ReadOnly = true;
-
+            // 
+            // colPorts
+            // 
             colPorts.HeaderText = "Open Ports";
             colPorts.Name = "colPorts";
             colPorts.ReadOnly = true;
-
+            // 
+            // statusStrip
+            // 
             statusStrip.Items.AddRange(new ToolStripItem[] { lblStatus });
             statusStrip.Location = new Point(0, 765);
             statusStrip.Name = "statusStrip";
             statusStrip.Size = new Size(1744, 22);
             statusStrip.SizingGrip = false;
             statusStrip.TabIndex = 3;
-
+            // 
+            // lblStatus
+            // 
             lblStatus.Name = "lblStatus";
             lblStatus.Size = new Size(83, 17);
             lblStatus.Text = "Ready to scan.";
-
+            // 
+            // topPanel
+            // 
             topPanel.BackColor = SystemColors.ControlLight;
             topPanel.Controls.Add(chkOwnIp);
             topPanel.Controls.Add(lblStartIp);
@@ -269,7 +325,9 @@
             topPanel.Padding = new Padding(10);
             topPanel.Size = new Size(1744, 150);
             topPanel.TabIndex = 2;
-
+            // 
+            // MainForm
+            // 
             AllowDrop = true;
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
@@ -290,6 +348,8 @@
             ((System.ComponentModel.ISupportInitialize)dgvResults).EndInit();
             statusStrip.ResumeLayout(false);
             statusStrip.PerformLayout();
+            topPanel.ResumeLayout(false);
+            topPanel.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }

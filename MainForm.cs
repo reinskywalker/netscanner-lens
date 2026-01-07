@@ -1,3 +1,14 @@
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.IO;
+using NetworkScannerUtilities;
+
 namespace netscan_lens
 {
     public partial class MainForm : Form
@@ -52,7 +63,7 @@ namespace netscan_lens
                     var ipProps = ni.GetIPProperties();
                     foreach (var ua in ipProps.UnicastAddresses)
                     {
-                        if (ua.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork && 
+                        if (ua.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork &&
                             !System.Net.IPAddress.IsLoopback(ua.Address))
                         {
                             return ua.Address.ToString();
@@ -75,32 +86,67 @@ namespace netscan_lens
                 progressBar.Value = 0;
 
                 var targets = BuildTargetIps();
+                
+                // FEATURE: Passing Arrays - Validate IPs before scanning using utility
+                string[] targetArray = targets.ToArray();
+                int validTargetCount = ScanHelper.CountValidIps(targetArray);
+
                 if (targets.Count == 0)
                 {
                     MessageBox.Show(this, "No target IP(s) specified.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
 
+                // FEATURE: Date, Time - Track session start
+                ScanHelper.ResetSession();
+                DateTime scanStartTime = DateTime.Now;
+
                 int timeout = (int)numTimeout.Value;
                 int total = targets.Count;
                 int completed = 0;
+                
+                // FEATURE: ByRef - Statistics counters
+                int totalScanned = 0;
+                int successCount = 0;
+                int failCount = 0;
+
                 bool isPortSweep = cmbScanType.SelectedItem?.ToString() == "Port Sweep";
                 var (startPort, endPort) = GetPortRange();
 
                 foreach (var ip in targets)
                 {
                     token.ThrowIfCancellationRequested();
-                    
-                    var pingResult = await PingAsync(ip, timeout, token);
+
+                    // FEATURE: Do-While Loop - Retry logic for ping
+                    int retry = 0;
+                    bool pingSuccess = false;
+                    long rtt = 0;
+                    int maxRetries = 1;
+
+                    do
+                    {
+                        var result = await PingAsync(ip, timeout, token);
+                        pingSuccess = result.success;
+                        rtt = result.rttMs;
+                        retry++;
+                    } while (!pingSuccess && retry <= maxRetries);
+
                     string host = "";
-                    string status = pingResult.success ? "Online" : "Timeout";
-                    string latency = pingResult.success ? pingResult.rttMs.ToString() : "-";
+                    
+                    // FEATURE: Switch Statement - Determine status message using utility
+                    ScanResultType resultType = pingSuccess ? ScanResultType.Online : ScanResultType.Timeout;
+                    string status = ScanHelper.GetStatusMessage(resultType);
+                    
+                    string latency = pingSuccess ? rtt.ToString() : "-";
                     string openPorts = string.Empty;
 
-                    if (pingResult.success)
+                    // FEATURE: ByRef - Update statistics via reference
+                    ScanHelper.UpdateStatistics(ref totalScanned, ref successCount, ref failCount, pingSuccess);
+
+                    if (pingSuccess)
                     {
                         host = await ResolveHostAsync(ip, token);
-                        
+
                         if (isPortSweep && startPort > 0 && endPort > 0)
                         {
                             lblStatus.Text = $"Scanning ports on {ip}...";
@@ -112,12 +158,17 @@ namespace netscan_lens
 
                     completed++;
                     progressBar.Value = Math.Min(100, (int)(completed * 100.0 / total));
-                    lblStatus.Text = $"Progress: {completed}/{total}";
                     
+                    // FEATURE: Date, Time - Show elapsed time in status
+                    TimeSpan uptime = ScanHelper.GetSessionUptime();
+                    lblStatus.Text = $"Progress: {completed}/{total} (Elapsed: {uptime:mm\\:ss})";
+
                     Application.DoEvents();
                 }
 
-                lblStatus.Text = "Scan complete.";
+                // FEATURE: Date, Time, and TimeSpan - Final duration
+                string totalDuration = ScanHelper.GetScanDuration(scanStartTime, DateTime.Now);
+                lblStatus.Text = $"Scan complete. Duration: {totalDuration}. Online: {successCount}, Offline: {failCount}";
             }
             catch (OperationCanceledException)
             {
@@ -161,21 +212,88 @@ namespace netscan_lens
 
         private void btnExport_Click(object? sender, EventArgs e)
         {
-            using var sfd = new SaveFileDialog { Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*", FileName = "scan-results.csv" };
+            // FEATURE: Directory - Create exports directory if it doesn't exist
+            string exportDir = Path.Combine(Application.StartupPath, "Exports");
+            if (!Directory.Exists(exportDir))
+            {
+                Directory.CreateDirectory(exportDir);
+            }
+
+            // FEATURE: File Dates and Time - Include timestamp in default filename
+            string timestamp = ScanHelper.GetTimestamp().Replace(":", "").Replace(" ", "_").Replace("-", "");
+            string defaultFilename = $"scan_results_{timestamp}";
+
+            using var sfd = new SaveFileDialog 
+            { 
+                Filter = "CSV files (*.csv)|*.csv|Text Report (*.txt)|*.txt", 
+                FileName = defaultFilename + ".csv",
+                InitialDirectory = exportDir
+            };
+            
             if (sfd.ShowDialog(this) == DialogResult.OK)
             {
-                using var sw = new System.IO.StreamWriter(sfd.FileName);
-                sw.WriteLine("ip,host,status,latency,ports");
-                foreach (DataGridViewRow row in dgvResults.Rows)
+                string ext = Path.GetExtension(sfd.FileName).ToLower();
+
+                // FEATURE: Switch Statement - Select export format
+                switch (ext)
                 {
-                    var ip = row.Cells[0].Value?.ToString() ?? "";
-                    var host = row.Cells[1].Value?.ToString() ?? "";
-                    var status = row.Cells[2].Value?.ToString() ?? "";
-                    var latency = row.Cells[3].Value?.ToString() ?? "";
-                    var ports = row.Cells[4].Value?.ToString() ?? "";
-                    sw.WriteLine($"\"{ip}\",\"{host}\",\"{status}\",\"{latency}\",\"{ports}\"");
+                    case ".txt":
+                        ExportAsTxt(sfd.FileName);
+                        break;
+                    case ".csv":
+                    default:
+                        ExportAsCsv(sfd.FileName);
+                        break;
                 }
+                
                 lblStatus.Text = $"Exported: {sfd.FileName}";
+            }
+        }
+
+        private void ExportAsCsv(string fileName)
+        {
+            using var sw = new System.IO.StreamWriter(fileName);
+            sw.WriteLine("ip,host,status,latency,ports");
+            foreach (DataGridViewRow row in dgvResults.Rows)
+            {
+                var ip = row.Cells[0].Value?.ToString() ?? "";
+                var host = row.Cells[1].Value?.ToString() ?? "";
+                var status = row.Cells[2].Value?.ToString() ?? "";
+                var latency = row.Cells[3].Value?.ToString() ?? "";
+                var ports = row.Cells[4].Value?.ToString() ?? "";
+                sw.WriteLine($"\"{ip}\",\"{host}\",\"{status}\",\"{latency}\",\"{ports}\"");
+            }
+        }
+
+        // FEATURE: Control Printing and Report Printing - Formatted text export
+        private void ExportAsTxt(string fileName)
+        {
+            using var sw = new System.IO.StreamWriter(fileName);
+            sw.WriteLine("NETWORK SCAN REPORT");
+            sw.WriteLine($"Generated: {ScanHelper.GetTimestamp()}");
+            sw.WriteLine(new string('=', 85));
+
+            // FEATURE: Alignment - Align headers
+            string header = TextAlignmentHelper.AlignText("IP Address", 18, TextAlignment.Left) +
+                            TextAlignmentHelper.AlignText("Host", 30, TextAlignment.Left) +
+                            TextAlignmentHelper.AlignText("Status", 25, TextAlignment.Left) +
+                            TextAlignmentHelper.AlignText("Latency", 10, TextAlignment.Right);
+            sw.WriteLine(header);
+            sw.WriteLine(new string('-', 85));
+
+            foreach (DataGridViewRow row in dgvResults.Rows)
+            {
+                var ip = row.Cells[0].Value?.ToString() ?? "";
+                var host = row.Cells[1].Value?.ToString() ?? "";
+                var status = row.Cells[2].Value?.ToString() ?? "";
+                var latency = row.Cells[3].Value?.ToString() ?? "";
+
+                // FEATURE: Alignment - Align data rows
+                string line = TextAlignmentHelper.AlignText(ip, 18, TextAlignment.Left) +
+                              TextAlignmentHelper.AlignText(host, 30, TextAlignment.Left) +
+                              TextAlignmentHelper.AlignText(status, 25, TextAlignment.Left) +
+                              TextAlignmentHelper.AlignText(latency, 10, TextAlignment.Right);
+                sw.WriteLine(line);
             }
         }
 
@@ -229,10 +347,14 @@ namespace netscan_lens
             var s = BitConverter.ToUInt32(start.GetAddressBytes().Reverse().ToArray(), 0);
             var e = BitConverter.ToUInt32(end.GetAddressBytes().Reverse().ToArray(), 0);
             if (s > e) (s, e) = (e, s);
-            for (uint i = s; i <= e; i++)
+            
+            // FEATURE: While Loop - Iterate through IP range
+            uint i = s;
+            while (i <= e)
             {
                 var bytes = BitConverter.GetBytes(i).Reverse().ToArray();
                 yield return new System.Net.IPAddress(bytes);
+                i++;
             }
         }
 
@@ -240,12 +362,12 @@ namespace netscan_lens
         {
             int start = (int)numPortStart.Value;
             int end = (int)numPortEnd.Value;
-            
+
             if (start == 1 && end == 1 && numPortStart.Value == 1 && numPortEnd.Value == 1)
             {
                 return (0, 0);
             }
-            
+
             if (end > 0 && start == 0)
             {
                 start = 1;
@@ -302,7 +424,7 @@ namespace netscan_lens
             for (int port = start; port <= end; port++)
             {
                 ct.ThrowIfCancellationRequested();
-                
+
                 int currentPort = port;
                 var task = Task.Run(async () =>
                 {
@@ -323,7 +445,7 @@ namespace netscan_lens
                         semaphore.Release();
                     }
                 });
-                
+
                 tasks.Add(task);
             }
 
@@ -346,6 +468,11 @@ namespace netscan_lens
         }
 
         private void topPanel_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void dgvResults_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
 
         }
