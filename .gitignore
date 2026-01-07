@@ -1,0 +1,73 @@
+## ===============================
+## .NET / Visual Studio
+## ===============================
+
+# Build results
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+
+# Visual Studio cache
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider / VS Code
+.idea/
+.vscode/
+
+# Build outputs
+*.exe
+*.dll
+*.pdb
+*.cache
+*.ilk
+
+# NuGet
+*.nupkg
+packages/
+.nuget/
+project.lock.json
+project.assets.json
+
+# Test results
+TestResults/
+*.trx
+
+# Publish
+publish/
+app.publish/
+
+# Resharper
+_ReSharper*/
+*.DotSettings.user
+
+# OS junk
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Backup & temp files
+*.bak
+*.tmp
+*.temp
+*.swp
+*~
+
+# Logs
+*.log
+
+# SQLite / Local DB
+*.db
+*.db-shm
+*.db-wal
+
+# Coverage
+coverage/
+*.coverage
+*.coveragexml
+
+# Crash dumps
+*.dmp
