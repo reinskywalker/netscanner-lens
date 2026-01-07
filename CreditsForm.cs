@@ -7,7 +7,7 @@ namespace netscan_lens
             InitializeComponent();
         }
 
-        private string SetName(string name, string studentID)
+        private string SetName(string name, string studentID) //reuse for credit name list
         {
             return $"{name}\nStudent ID: {studentID}\n\n";
         }
